@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.File;
 
 public class MusicPlayerGUI extends JFrame {
@@ -17,6 +18,7 @@ public class MusicPlayerGUI extends JFrame {
     private JFileChooser jFileChooser;
 
     private JLabel songTitle, songArtist;
+    private JPanel playbackBtns;
 
     public MusicPlayerGUI(){
         //calls JFrame constructor to configure out gui and set the title header to "Music Player"
@@ -46,6 +48,9 @@ public class MusicPlayerGUI extends JFrame {
 
         //set a default path for file explorer
         jFileChooser.setCurrentDirectory(new File("src/assets/drive-download-20250416T121646Z-001"));
+
+        //filter file chooser to only see .mp3 files
+        jFileChooser.setFileFilter(new FileNameExtensionFilter("MP3", "mp3"));
 
         addGuiComponents();
     }
@@ -105,10 +110,12 @@ public class MusicPlayerGUI extends JFrame {
         loadSong.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                jFileChooser.showOpenDialog(MusicPlayerGUI.this);
+                // an integer is returned to us to let us know what the user did
+                int result = jFileChooser.showOpenDialog(MusicPlayerGUI.this);
                 File selectedFile = jFileChooser.getSelectedFile();
 
-                if(selectedFile != null){
+                //this means that we are also checking to see if the user pressed the "open" button
+                if(result == JFileChooser.APPROVE_OPTION && selectedFile != null){
                     //create a song obj based on selected file
                     Song song = new Song(selectedFile.getPath());
 
@@ -117,6 +124,9 @@ public class MusicPlayerGUI extends JFrame {
 
                     // update song title and artist
                     updateSongTitleAndArtist(song);
+
+                    //toggle on pause button and toggle off play button
+                    enablePauseButtonDisablePlayButton();
                 }
             }
         });
@@ -137,7 +147,7 @@ public class MusicPlayerGUI extends JFrame {
     }
 
     private void addPlaybackBtns(){
-        JPanel playbackBtns = new JPanel();
+        playbackBtns = new JPanel();
         playbackBtns.setBounds(0, 435, getWidth() - 10, 80);
         playbackBtns.setBackground(null);
 
@@ -151,6 +161,16 @@ public class MusicPlayerGUI extends JFrame {
         JButton playButton = new JButton(loadImage("src/assets/drive-download-20250416T121646Z-001/play.png"));
         playButton.setBorderPainted(false);
         playButton.setBackground(null);
+        playButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // toggle on play button and toggle off pause button
+                enablePauseButtonDisablePlayButton();
+
+                //play or resume song
+                musicPlayer.playCurrentSong();
+            }
+        });
         playbackBtns.add(playButton);
 
         //pause button
@@ -158,6 +178,16 @@ public class MusicPlayerGUI extends JFrame {
         pauseButton.setBorderPainted(false);
         pauseButton.setVisible(false);
         pauseButton.setBackground(null);
+        pauseButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //toggle off pause button and toggle on play button
+                enablePlayButtonDisablePauseButton();
+
+                // pause the song
+                musicPlayer.pauseSong();
+            }
+        });
         playbackBtns.add(pauseButton);
 
         //next button
@@ -169,9 +199,38 @@ public class MusicPlayerGUI extends JFrame {
         add(playbackBtns);
     }
 
+
     private void updateSongTitleAndArtist(Song song){
         songTitle.setText(song.getSongTitle());
         songArtist.setText(song.getSongArtist());
+    }
+
+    private void enablePauseButtonDisablePlayButton(){
+        // retrieve reference to play button from playbackBtns panel
+        JButton playButton = (JButton) playbackBtns.getComponent(1);
+        JButton pauseButton = (JButton) playbackBtns.getComponent(2);
+
+        //turn off play button
+        playButton.setVisible(false);
+        playButton.setEnabled(false);
+
+        //turn on pause button
+        pauseButton.setVisible(true);
+        pauseButton.setEnabled(true);
+    }
+
+    private void enablePlayButtonDisablePauseButton(){
+        // retrieve reference to play button from playbackBtns panel
+        JButton playButton = (JButton) playbackBtns.getComponent(1);
+        JButton pauseButton = (JButton) playbackBtns.getComponent(2);
+
+        //turn on play button
+        playButton.setVisible(true);
+        playButton.setEnabled(true);
+
+        //turn off pause button
+        pauseButton.setVisible(false);
+        pauseButton.setEnabled(false);
     }
 
     private ImageIcon loadImage(String imagePath){
