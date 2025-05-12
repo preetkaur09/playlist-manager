@@ -20,8 +20,7 @@ public class Playlist {
     }
 
     public boolean removeSong(Song song) {
-       return songPaths.remove(song.getFilePath());
-
+        return songPaths.remove(song.getFilePath());
     }
 
     public List<String> getSongPaths() {
@@ -35,6 +34,4 @@ public class Playlist {
     public void setName(String newName) {
         this.name = newName;
     }
-
-
 }

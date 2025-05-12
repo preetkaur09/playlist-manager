@@ -35,6 +35,7 @@ public class MusicPlayerGUI extends JFrame {
     private Stack<Song> songHistory = new Stack<>();
     private JComboBox<Playlist> playlistSelector;
 
+
     public MusicPlayerGUI(){
         //calls JFrame constructor to configure out gui and set the title header to "Music Player"
         super("Music Player");
@@ -100,7 +101,7 @@ public class MusicPlayerGUI extends JFrame {
         add(songImage);
 
         //song title
-        songTitle = new JLabel ("models.Song Title");
+        songTitle = new JLabel ("Song Title");
         songTitle.setBounds(0, 285, getWidth() - 10, 30);
         songTitle.setFont(new Font("Dialog", Font.BOLD, 24));
         songTitle.setForeground(TEXT_COLOR);
@@ -137,12 +138,59 @@ public class MusicPlayerGUI extends JFrame {
         toolBar.add(menuBar);
 
         //now we will add a song menu where we will place the loading song option
-        JMenu songMenu = new JMenu("models.Song");
+        JMenu songMenu = new JMenu("Song");
         menuBar.add(songMenu);
 
         // add the "load song" item in the songMenu
-        JMenuItem loadSong = new JMenuItem("Load models.Song");
+        JMenuItem loadSong = new JMenuItem("Load Song");
         songMenu.add(loadSong);
+
+        //now we will add the playlist menu
+        JMenu playlistMenu = new JMenu("Playlist");
+        menuBar.add(playlistMenu);
+
+        //then add the items to the playlist menu
+        JMenuItem createPlaylist = new JMenuItem("Create Playlist");
+        playlistMenu.add(createPlaylist);
+
+        JMenuItem loadPlaylist = new JMenuItem("Load Playlist");
+        playlistMenu.add(loadPlaylist);
+
+        JMenuItem renamePlaylist = new JMenuItem("Rename Playlist");
+        playlistMenu.add(renamePlaylist);
+
+        JMenuItem deletePlaylist = new JMenuItem("Delete Playlist");
+        playlistMenu.add(deletePlaylist);
+
+        JMenuItem viewPlaylist = new JMenuItem("View Songs");
+        playlistMenu.add(viewPlaylist);
+
+        JMenuItem playAll = new JMenuItem("Play All");
+        playlistMenu.add(playAll);
+
+        //JMenuItem savePlaylist = new JMenuItem("Save Playlist");
+        //playlistMenu.add(savePlaylist);
+
+        //JMenuItem loadPlaylistFromFile = new JMenuItem("Load from File");
+        //playlistMenu.add(loadPlaylistFromFile);
+
+        JMenuItem songToPlaylist = new JMenuItem("Add Song to Playlist");
+        playlistMenu.add(songToPlaylist);
+
+        // Add the search playlist menu item
+        JMenuItem searchPlaylist = new JMenuItem("Search Playlist by Name");
+        playlistMenu.add(searchPlaylist);
+        searchPlaylist.addActionListener(e -> {
+            String searchName = JOptionPane.showInputDialog("Enter playlist name to search:");
+            if (searchName != null && !searchName.trim().isEmpty()) {
+                Playlist foundPlaylist = binarySearchPlaylist(searchName.trim());
+                if (foundPlaylist != null) {
+                    JOptionPane.showMessageDialog(this, "Found Playlist: " + foundPlaylist.getName());
+                } else {
+                    JOptionPane.showMessageDialog(this, "Playlist not found.");
+                }
+            }
+        });
 
 
         loadSong.addActionListener(new ActionListener() {
@@ -170,54 +218,6 @@ public class MusicPlayerGUI extends JFrame {
             }
         });
 
-        // Add models.Song to Selected models.Playlist Menu Item
-        JMenuItem addSongToPlaylist = new JMenuItem("Add models.Song to Selected models.Playlist");
-        songMenu.add(addSongToPlaylist);
-        addSongToPlaylist.addActionListener(e -> {
-            Song selectedSong = getSelectedSong(); // Implement this method to get the currently selected song
-            addSongToSelectedPlaylist(selectedSong);
-        });
-
-        // Delete models.Song from Selected models.Playlist Menu Item
-        JMenuItem deleteSongFromPlaylist = new JMenuItem("Delete models.Song from Selected models.Playlist");
-        songMenu.add(deleteSongFromPlaylist);
-        deleteSongFromPlaylist.addActionListener(e -> {
-            Song selectedSong = getSelectedSong(); // Implement this method to get the currently selected song
-            deleteSongFromSelectedPlaylist(selectedSong);
-        });
-
-        //now we will add the playlist menu
-        JMenu playlistMenu = new JMenu("Playlist");
-        menuBar.add(playlistMenu);
-
-        //then add the items to the playlist menu
-        JMenuItem createPlaylist = new JMenuItem("Create Playlist");
-        playlistMenu.add(createPlaylist);
-
-        JMenuItem loadPlaylist = new JMenuItem("Load Playlist");
-        playlistMenu.add(loadPlaylist);
-
-        JMenuItem renamePlaylist = new JMenuItem("Rename Playlist");
-        playlistMenu.add(renamePlaylist);
-
-        JMenuItem deletePlaylist = new JMenuItem("Delete Playlist");
-        playlistMenu.add(deletePlaylist);
-
-        JMenuItem viewPlaylist = new JMenuItem("View Songs");
-        playlistMenu.add(viewPlaylist);
-
-        JMenuItem playAll = new JMenuItem("Play All");
-        playlistMenu.add(playAll);
-
-        JMenuItem savePlaylist = new JMenuItem("Save Playlist");
-        playlistMenu.add(savePlaylist);
-
-        JMenuItem loadPlaylistFromFile = new JMenuItem("Load from File");
-        playlistMenu.add(loadPlaylistFromFile);
-
-        JMenuItem songToPlaylist = new JMenuItem("Add Song to Playlist");
-        playlistMenu.add(songToPlaylist);
-
         songToPlaylist.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -234,7 +234,7 @@ public class MusicPlayerGUI extends JFrame {
             }
         });
 
-        // models.Playlist Actions
+        // Playlist Actions
         createPlaylist.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -242,6 +242,7 @@ public class MusicPlayerGUI extends JFrame {
                 if (name != null && !name.trim().isEmpty()) {
                     Playlist newPlaylist = new Playlist(name.trim());
                     playlists.add(newPlaylist);
+                    sortPlaylists(); // Sort the playlists after adding
                     currentPlaylist = newPlaylist;
                     JOptionPane.showMessageDialog(null, "Playlist created!");
                 }
@@ -272,18 +273,16 @@ public class MusicPlayerGUI extends JFrame {
             }
         });
 
-        renamePlaylist.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (currentPlaylist == null) {
-                    JOptionPane.showMessageDialog(null, "No playlist loaded.");
-                    return;
-                }
-                String newName = JOptionPane.showInputDialog("Enter new name for playlist:");
-                if (newName != null && !newName.trim().isEmpty()) {
-                    currentPlaylist.setName(newName.trim());
-                    JOptionPane.showMessageDialog(null, "Playlist renamed.");
-                }
+        renamePlaylist.addActionListener(e -> {
+            if (currentPlaylist == null) {
+                JOptionPane.showMessageDialog(this, "No playlist loaded.");
+                return;
+            }
+            String newName = JOptionPane.showInputDialog("Enter new name for playlist:");
+            if (newName != null && !newName.trim().isEmpty()) {
+                currentPlaylist.setName(newName.trim());
+                sortPlaylists(); // Sort the playlists after renaming
+                JOptionPane.showMessageDialog(this, "Playlist renamed to: " + newName);
             }
         });
 
@@ -297,7 +296,7 @@ public class MusicPlayerGUI extends JFrame {
 
                 String[] names = playlists.stream().map(Playlist::getName).toArray(String[]::new);
                 String selected = (String) JOptionPane.showInputDialog(null, "Select playlist to delete:",
-                        "Delete models.Playlist", JOptionPane.QUESTION_MESSAGE, null, names, names[0]);
+                        "Delete Playlist", JOptionPane.QUESTION_MESSAGE, null, names, names[0]);
 
                 if (selected != null) {
                     playlists.removeIf(p -> p.getName().equals(selected));
@@ -335,47 +334,47 @@ public class MusicPlayerGUI extends JFrame {
             playNextSong();
         });
 
-        savePlaylist.addActionListener(e -> {
-            if (currentPlaylist == null) {
-                JOptionPane.showMessageDialog(null, "No playlist selected.");
-                return;
-            }
+//        savePlaylist.addActionListener(e -> {
+//            if (currentPlaylist == null) {
+//                JOptionPane.showMessageDialog(null, "No playlist selected.");
+//                return;
+//            }
+//
+//            try {
+//                File file = new File("playlists/" + currentPlaylist.getName() + ".txt");
+//                file.getParentFile().mkdirs();
+//                java.io.FileWriter fw = new java.io.FileWriter(file);
+//                for (String path : currentPlaylist.getSongPaths()) {
+//                    fw.write(path + "\n");
+//                }
+//                fw.close();
+//                JOptionPane.showMessageDialog(null, "Playlist saved.");
+//            } catch (Exception ex) {
+//                ex.printStackTrace();
+//            }
+//        });
 
-            try {
-                File file = new File("playlists/" + currentPlaylist.getName() + ".txt");
-                file.getParentFile().mkdirs();
-                java.io.FileWriter fw = new java.io.FileWriter(file);
-                for (String path : currentPlaylist.getSongPaths()) {
-                    fw.write(path + "\n");
-                }
-                fw.close();
-                JOptionPane.showMessageDialog(null, "Playlist saved.");
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        });
-
-        loadPlaylistFromFile.addActionListener(e -> {
-            JFileChooser chooser = new JFileChooser("playlists");
-            int result = chooser.showOpenDialog(null);
-            if (result == JFileChooser.APPROVE_OPTION) {
-                try {
-                    File file = chooser.getSelectedFile();
-                    Scanner sc = new Scanner(file);
-                    Playlist loaded = new Playlist(file.getName().replace(".txt", ""));
-                    while (sc.hasNextLine()) {
-                        String path = sc.nextLine();
-                        loaded.getSongPaths().add(path);
-                    }
-                    sc.close();
-                    playlists.add(loaded);
-                    currentPlaylist = loaded;
-                    JOptionPane.showMessageDialog(null, "Playlist loaded from file.");
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            }
-        });
+//        loadPlaylistFromFile.addActionListener(e -> {
+//            JFileChooser chooser = new JFileChooser("playlists");
+//            int result = chooser.showOpenDialog(null);
+//            if (result == JFileChooser.APPROVE_OPTION) {
+//                try {
+//                    File file = chooser.getSelectedFile();
+//                    Scanner sc = new Scanner(file);
+//                    Playlist loaded = new Playlist(file.getName().replace(".txt", ""));
+//                    while (sc.hasNextLine()) {
+//                        String path = sc.nextLine();
+//                        loaded.getSongPaths().add(path);
+//                    }
+//                    sc.close();
+//                    playlists.add(loaded);
+//                    currentPlaylist = loaded;
+//                    JOptionPane.showMessageDialog(null, "Playlist loaded from file.");
+//                } catch (Exception ex) {
+//                    ex.printStackTrace();
+//                }
+//            }
+//        });
 
 
         add(toolBar);
@@ -532,52 +531,27 @@ public class MusicPlayerGUI extends JFrame {
         JOptionPane.showMessageDialog(this, "Selected models.Playlist: " + currentPlaylist.getName());
     }
 
-    private void addSongToSelectedPlaylist(Song song) {
-        if (currentPlaylist != null) {
-            if (currentPlaylist.addSong(song)) {
-                JOptionPane.showMessageDialog(this, "models.Song added to playlist: " + currentPlaylist.getName());
+    private void sortPlaylists() {
+        Collections.sort(playlists, (p1, p2) -> p1.getName().compareToIgnoreCase(p2.getName()));
+    }
+
+    private Playlist binarySearchPlaylist(String name) {
+        int left = 0;
+        int right = playlists.size() - 1;
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+            Playlist midPlaylist = playlists.get(mid);
+
+            int comparison = midPlaylist.getName().compareToIgnoreCase(name);
+            if (comparison == 0) {
+                return midPlaylist; // Found the playlist
+            } else if (comparison < 0) {
+                left = mid + 1; // Search in the right half
             } else {
-                JOptionPane.showMessageDialog(this, "models.Song already exists in the playlist.");
+                right = mid - 1; // Search in the left half
             }
-        } else {
-            JOptionPane.showMessageDialog(this, "No playlist selected.");
         }
-    }
-
-    private void playSongsFromSelectedPlaylist() {
-        if (currentPlaylist != null && !currentPlaylist.getSongPaths().isEmpty()) {
-            songQueue.clear();
-            for (String path : currentPlaylist.getSongPaths()) {
-                songQueue.add(new Song(path));
-            }
-            playNextSong();
-        } else {
-            JOptionPane.showMessageDialog(this, "No songs in the selected playlist.");
-        }
-    }
-
-    private void deleteSongFromSelectedPlaylist(Song song) {
-        if (currentPlaylist != null) {
-            // Check if the song exists in the current playlist
-            if (currentPlaylist.getSongPaths().contains(song.getFilePath())) {
-                if (currentPlaylist.removeSong(song)) {
-                    JOptionPane.showMessageDialog(this, "models.Song removed from playlist: " + currentPlaylist.getName());
-                } else {
-                    JOptionPane.showMessageDialog(this, "Failed to remove song from the playlist.");
-                }
-            } else {
-                JOptionPane.showMessageDialog(this, "models.Song not found in the playlist.");
-            }
-        } else {
-            JOptionPane.showMessageDialog(this, "No playlist selected.");
-        }
-    }
-
-    private Song getSelectedSong() {
-        // Implement logic to return the currently selected song
-        // For example, if you have a list of songs displayed in the GUI:
-        // return songList.getSelectedValue(); // Assuming songList is a JList of models.Song objects
-        return null; // Placeholder, implement your logic here
+        return null; // Playlist not found
     }
 
 
