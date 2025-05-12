@@ -1,3 +1,5 @@
+import view.MusicPlayerGUI;
+
 import javax.swing.*;
 
 public class App {

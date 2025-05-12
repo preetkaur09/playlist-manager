@@ -1,3 +1,5 @@
+package models;
+
 import com.mpatric.mp3agic.Mp3File;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.tag.FieldKey;
@@ -5,7 +7,6 @@ import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.tag.Tag;
 import java.io.File;
 
-import java.lang.reflect.Field;
 //class used to describe a song
 public class Song {
     private String songTitle;

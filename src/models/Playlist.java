@@ -1,3 +1,5 @@
+package models;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,8 +20,8 @@ public class Playlist {
     }
 
     public boolean removeSong(Song song) {
-        songPaths.remove(song.getFilePath());
-        return false;
+       return songPaths.remove(song.getFilePath());
+
     }
 
     public List<String> getSongPaths() {

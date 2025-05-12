@@ -1,3 +1,5 @@
+package models;
+
 import javazoom.jl.player.advanced.AdvancedPlayer;
 import javazoom.jl.player.advanced.PlaybackEvent;
 import javazoom.jl.player.advanced.PlaybackListener;
@@ -6,7 +8,7 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 
 public class MusicPlayer extends PlaybackListener {
-    // we will need a way to store our song's details, so ww will be creating a song class
+    // we will need a way to store our song's details, so we will be creating a song class
     private Song currentSong;
 
     //use JLayer Library to create an AdvancedPlayer obj which will handle playing the music
