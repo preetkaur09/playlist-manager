@@ -10,12 +10,16 @@ public class Playlist {
         this.songPaths = new ArrayList<>();
     }
 
-    public void addSong(Song song) {
-        songPaths.add(song.getFilePath());
+    public boolean addSong(Song song) {
+        if (!songPaths.contains(song.getFilePath())) {
+            return songPaths.add(song.getFilePath());
+        }
+        return false;
     }
 
-    public void removeSong(Song song) {
+    public boolean removeSong(Song song) {
         songPaths.remove(song.getFilePath());
+        return false;
     }
 
     public List<String> getSongPaths() {
@@ -29,4 +33,6 @@ public class Playlist {
     public void setName(String newName) {
         this.name = newName;
     }
+
+
 }

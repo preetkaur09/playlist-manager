@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.*;
 
 
-
 public class MusicPlayerGUI extends JFrame {
     //color configuration
     public static final Color FRAME_COLOR = Color.BLACK;
@@ -32,6 +31,8 @@ public class MusicPlayerGUI extends JFrame {
 
     private Queue<Song> songQueue = new LinkedList<>();
     private Stack<Song> songHistory = new Stack<>();
+
+    private JComboBox<Playlist> playlistSelector;
 
     public MusicPlayerGUI(){
         //calls JFrame constructor to configure out gui and set the title header to "Music Player"
@@ -64,6 +65,26 @@ public class MusicPlayerGUI extends JFrame {
 
         //filter file chooser to only see .mp3 files
         jFileChooser.setFileFilter(new FileNameExtensionFilter("MP3", "mp3"));
+
+        // Initialize the playlist selector
+        playlistSelector = new JComboBox<>();
+        add(playlistSelector);
+
+        // Populate the playlist selector with existing playlists
+        for (Playlist playlist : playlists) {
+            playlistSelector.addItem(playlist);
+        }
+
+        // Set bounds for the playlist selector
+        playlistSelector.setBounds(10, 10, 200, 30); // Adjust the position as needed
+        add(playlistSelector);
+
+        // Add an action listener to handle playlist selection
+        playlistSelector.addActionListener(e -> {
+            Playlist selectedPlaylist = (Playlist) playlistSelector.getSelectedItem();
+            selectPlaylist(selectedPlaylist);
+
+        });
 
         addGuiComponents();
     }
@@ -148,6 +169,22 @@ public class MusicPlayerGUI extends JFrame {
             }
         });
 
+        // Add Song to Selected Playlist Menu Item
+        JMenuItem addSongToPlaylist = new JMenuItem("Add Song to Selected Playlist");
+        songMenu.add(addSongToPlaylist);
+        addSongToPlaylist.addActionListener(e -> {
+            Song selectedSong = getSelectedSong(); // Implement this method to get the currently selected song
+            addSongToSelectedPlaylist(selectedSong);
+        });
+
+        // Delete Song from Selected Playlist Menu Item
+        JMenuItem deleteSongFromPlaylist = new JMenuItem("Delete Song from Selected Playlist");
+        songMenu.add(deleteSongFromPlaylist);
+        deleteSongFromPlaylist.addActionListener(e -> {
+            Song selectedSong = getSelectedSong(); // Implement this method to get the currently selected song
+            deleteSongFromSelectedPlaylist(selectedSong);
+        });
+
         //now we will add the playlist menu
         JMenu playlistMenu = new JMenu("Playlist");
         menuBar.add(playlistMenu);
@@ -177,10 +214,10 @@ public class MusicPlayerGUI extends JFrame {
         JMenuItem loadPlaylistFromFile = new JMenuItem("Load from File");
         playlistMenu.add(loadPlaylistFromFile);
 
-        JMenuItem addSongToPlaylist = new JMenuItem("Add Song to Playlist");
-        playlistMenu.add(addSongToPlaylist);
+        JMenuItem songToPlaylist = new JMenuItem("Add Song to Playlist");
+        playlistMenu.add(songToPlaylist);
 
-        addSongToPlaylist.addActionListener(new ActionListener() {
+        songToPlaylist.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int result = jFileChooser.showOpenDialog(MusicPlayerGUI.this);
@@ -345,13 +382,18 @@ public class MusicPlayerGUI extends JFrame {
 
     private void playNextSong() {
         if (!songQueue.isEmpty()) {
+            // Stop the current song
+            musicPlayer.stopSong();
+
             Song nextSong = songQueue.poll();
-            songHistory.push(nextSong); // Save for back button
+            songHistory.push(nextSong);
             musicPlayer.loadSong(nextSong);
             updateSongTitleAndArtist(nextSong);
+            updatePlaylistSlider(nextSong);
             enablePauseButtonDisablePlayButton();
         } else {
             JOptionPane.showMessageDialog(null, "End of playlist.");
+            enablePlayButtonDisablePauseButton();
         }
     }
 
@@ -482,6 +524,62 @@ public class MusicPlayerGUI extends JFrame {
         //could not find resource
         return null;
     }
+
+    private void selectPlaylist(Playlist playlist) {
+        currentPlaylist = playlist;
+        // Update UI to reflect the selected playlist
+        JOptionPane.showMessageDialog(this, "Selected Playlist: " + currentPlaylist.getName());
+    }
+
+    private void addSongToSelectedPlaylist(Song song) {
+        if (currentPlaylist != null) {
+            if (currentPlaylist.addSong(song)) {
+                JOptionPane.showMessageDialog(this, "Song added to playlist: " + currentPlaylist.getName());
+            } else {
+                JOptionPane.showMessageDialog(this, "Song already exists in the playlist.");
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "No playlist selected.");
+        }
+    }
+
+    private void playSongsFromSelectedPlaylist() {
+        if (currentPlaylist != null && !currentPlaylist.getSongPaths().isEmpty()) {
+            songQueue.clear();
+            for (String path : currentPlaylist.getSongPaths()) {
+                songQueue.add(new Song(path));
+            }
+            playNextSong();
+        } else {
+            JOptionPane.showMessageDialog(this, "No songs in the selected playlist.");
+        }
+    }
+
+    private void deleteSongFromSelectedPlaylist(Song song) {
+        if (currentPlaylist != null) {
+            // Check if the song exists in the current playlist
+            if (currentPlaylist.getSongPaths().contains(song.getFilePath())) {
+                if (currentPlaylist.removeSong(song)) {
+                    JOptionPane.showMessageDialog(this, "Song removed from playlist: " + currentPlaylist.getName());
+                } else {
+                    JOptionPane.showMessageDialog(this, "Failed to remove song from the playlist.");
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Song not found in the playlist.");
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "No playlist selected.");
+        }
+    }
+
+    private Song getSelectedSong() {
+        // Implement logic to return the currently selected song
+        // For example, if you have a list of songs displayed in the GUI:
+        // return songList.getSelectedValue(); // Assuming songList is a JList of Song objects
+        return null; // Placeholder, implement your logic here
+    }
+
+
 }
 
 

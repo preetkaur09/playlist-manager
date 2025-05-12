@@ -26,6 +26,9 @@ public class MusicPlayer extends PlaybackListener {
     public void loadSong(Song song){
         currentSong = song;
 
+        // stop any current playing song
+        stopSong();
+
         // play the current song if not null
         if(currentSong != null){
             playCurrentSong();
@@ -47,24 +50,27 @@ public class MusicPlayer extends PlaybackListener {
             advancedPlayer.stop();
             advancedPlayer.close();
             advancedPlayer = null;
+            currentFrame = 0;
+            isPaused = false;
         }
     }
 
     public void playCurrentSong(){
-        if(currentSong == null) return;
-        try{
-            //read mp3 audio data
+        if (currentSong == null) return;
+        try {
+            // Ensure any existing player is stopped
+            if (advancedPlayer != null) {
+                advancedPlayer.stop();
+                advancedPlayer.close();
+            }
+            // Create new player for the current song
             FileInputStream fileInputStream = new FileInputStream(currentSong.getFilePath());
             BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
-
-            //create a new advanced player
             advancedPlayer = new AdvancedPlayer(bufferedInputStream);
             advancedPlayer.setPlayBackListener(this);
-
-            //start music
+            // Start playback
             startMusicThread();
-
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -98,12 +104,14 @@ public class MusicPlayer extends PlaybackListener {
 
     @Override
     public void playbackFinished(PlaybackEvent evt) {
-        //this method gets called when the song finishes or if the player gets closed
         System.out.println("Playback Finished");
-        if(isPaused ){
+        if (isPaused) {
             currentFrame += (int) ((double) evt.getFrame() * currentSong.getFrameRatePerMilliseconds());
             System.out.println("Stopped @" + currentFrame);
         }
+        // Reset flags
+        isPaused = false;
+        currentFrame = 0;
     }
 }
 

@@ -48,9 +48,7 @@ public class Song {
         return songArtist;
     }
 
-    public String getSongLength() {
-        return songLength;
-    }
+
 
     public String getFilePath() {
         return filePath;
@@ -58,4 +56,14 @@ public class Song {
 
     public Mp3File getMp3File(){return mp3File;}
     public double getFrameRatePerMilliseconds() {return frameRatePerMilliseconds;}
+
+    public String getSongLength() {
+        if (mp3File != null) {
+            long milliseconds = mp3File.getLengthInMilliseconds();
+            int seconds = (int) (milliseconds / 1000) % 60;
+            int minutes = (int) ((milliseconds / 1000) / 60);
+            return String.format("%02d:%02d", minutes, seconds);
+        }
+        return "N/A";
+    }
 }
