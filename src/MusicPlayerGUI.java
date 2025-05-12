@@ -122,6 +122,7 @@ public class MusicPlayerGUI extends JFrame {
         JMenuItem loadSong = new JMenuItem("Load Song");
         songMenu.add(loadSong);
 
+
         loadSong.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -176,6 +177,24 @@ public class MusicPlayerGUI extends JFrame {
         JMenuItem loadPlaylistFromFile = new JMenuItem("Load from File");
         playlistMenu.add(loadPlaylistFromFile);
 
+        JMenuItem addSongToPlaylist = new JMenuItem("Add Song to Playlist");
+        playlistMenu.add(addSongToPlaylist);
+
+        addSongToPlaylist.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int result = jFileChooser.showOpenDialog(MusicPlayerGUI.this);
+                File selectedFile = jFileChooser.getSelectedFile();
+
+                if (result == JFileChooser.APPROVE_OPTION && selectedFile != null && currentPlaylist != null) {
+                    Song song = new Song(selectedFile.getPath());
+                    currentPlaylist.addSong(song);
+                    JOptionPane.showMessageDialog(null, "Song added to playlist: " + song.getSongTitle());
+                } else {
+                    JOptionPane.showMessageDialog(null, "No playlist selected or file not valid.");
+                }
+            }
+        });
 
         // Playlist Actions
         createPlaylist.addActionListener(new ActionListener() {
