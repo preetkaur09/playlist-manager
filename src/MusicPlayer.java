@@ -51,6 +51,7 @@ public class MusicPlayer extends PlaybackListener {
     }
 
     public void playCurrentSong(){
+        if(currentSong == null) return;
         try{
             //read mp3 audio data
             FileInputStream fileInputStream = new FileInputStream(currentSong.getFilePath());
@@ -100,7 +101,8 @@ public class MusicPlayer extends PlaybackListener {
         //this method gets called when the song finishes or if the player gets closed
         System.out.println("Playback Finished");
         if(isPaused ){
-            currentFrame = evt.getFrame();
+            currentFrame += (int) ((double) evt.getFrame() * currentSong.getFrameRatePerMilliseconds());
+            System.out.println("Stopped @" + currentFrame);
         }
     }
 }

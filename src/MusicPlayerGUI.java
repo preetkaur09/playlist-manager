@@ -6,6 +6,12 @@ import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.File;
+import java.util.Hashtable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.*;
+
+
 
 public class MusicPlayerGUI extends JFrame {
     //color configuration
@@ -19,6 +25,13 @@ public class MusicPlayerGUI extends JFrame {
 
     private JLabel songTitle, songArtist;
     private JPanel playbackBtns;
+    private JSlider playbackSlider;
+
+    private List<Playlist> playlists = new ArrayList<>();
+    private Playlist currentPlaylist = null;
+
+    private Queue<Song> songQueue = new LinkedList<>();
+    private Stack<Song> songHistory = new Stack<>();
 
     public MusicPlayerGUI(){
         //calls JFrame constructor to configure out gui and set the title header to "Music Player"
@@ -81,7 +94,7 @@ public class MusicPlayerGUI extends JFrame {
         add(songArtist);
 
         //playback slider
-        JSlider playbackSlider = new JSlider(JSlider.HORIZONTAL, 0, 100, 0);
+        playbackSlider = new JSlider(JSlider.HORIZONTAL, 0, 100, 0);
         playbackSlider.setBounds(getWidth()/2 - 300/2, 365, 300, 40);
         playbackSlider.setBackground(null);
         add(playbackSlider);
@@ -107,6 +120,8 @@ public class MusicPlayerGUI extends JFrame {
 
         // add the "load song" item in the songMenu
         JMenuItem loadSong = new JMenuItem("Load Song");
+        songMenu.add(loadSong);
+
         loadSong.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -127,10 +142,10 @@ public class MusicPlayerGUI extends JFrame {
 
                     //toggle on pause button and toggle off play button
                     enablePauseButtonDisablePlayButton();
+
                 }
             }
         });
-        songMenu.add(loadSong);
 
         //now we will add the playlist menu
         JMenu playlistMenu = new JMenu("Playlist");
@@ -143,7 +158,182 @@ public class MusicPlayerGUI extends JFrame {
         JMenuItem loadPlaylist = new JMenuItem("Load Playlist");
         playlistMenu.add(loadPlaylist);
 
+        JMenuItem renamePlaylist = new JMenuItem("Rename Playlist");
+        playlistMenu.add(renamePlaylist);
+
+        JMenuItem deletePlaylist = new JMenuItem("Delete Playlist");
+        playlistMenu.add(deletePlaylist);
+
+        JMenuItem viewPlaylist = new JMenuItem("View Songs");
+        playlistMenu.add(viewPlaylist);
+
+        JMenuItem playAll = new JMenuItem("Play All");
+        playlistMenu.add(playAll);
+
+        JMenuItem savePlaylist = new JMenuItem("Save Playlist");
+        playlistMenu.add(savePlaylist);
+
+        JMenuItem loadPlaylistFromFile = new JMenuItem("Load from File");
+        playlistMenu.add(loadPlaylistFromFile);
+
+
+        // Playlist Actions
+        createPlaylist.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String name = JOptionPane.showInputDialog("Enter playlist name:");
+                if (name != null && !name.trim().isEmpty()) {
+                    Playlist newPlaylist = new Playlist(name.trim());
+                    playlists.add(newPlaylist);
+                    currentPlaylist = newPlaylist;
+                    JOptionPane.showMessageDialog(null, "Playlist created!");
+                }
+            }
+        });
+
+        loadPlaylist.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (playlists.isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "No playlists found.");
+                    return;
+                }
+
+                String[] names = playlists.stream().map(Playlist::getName).toArray(String[]::new);
+                String selected = (String) JOptionPane.showInputDialog(null, "Select a playlist:",
+                        "Load Playlist", JOptionPane.QUESTION_MESSAGE, null, names, names[0]);
+
+                if (selected != null) {
+                    for (Playlist p : playlists) {
+                        if (p.getName().equals(selected)) {
+                            currentPlaylist = p;
+                            JOptionPane.showMessageDialog(null, "Loaded playlist: " + selected);
+                            break;
+                        }
+                    }
+                }
+            }
+        });
+
+        renamePlaylist.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (currentPlaylist == null) {
+                    JOptionPane.showMessageDialog(null, "No playlist loaded.");
+                    return;
+                }
+                String newName = JOptionPane.showInputDialog("Enter new name for playlist:");
+                if (newName != null && !newName.trim().isEmpty()) {
+                    currentPlaylist.setName(newName.trim());
+                    JOptionPane.showMessageDialog(null, "Playlist renamed.");
+                }
+            }
+        });
+
+        deletePlaylist.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (playlists.isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "No playlists to delete.");
+                    return;
+                }
+
+                String[] names = playlists.stream().map(Playlist::getName).toArray(String[]::new);
+                String selected = (String) JOptionPane.showInputDialog(null, "Select playlist to delete:",
+                        "Delete Playlist", JOptionPane.QUESTION_MESSAGE, null, names, names[0]);
+
+                if (selected != null) {
+                    playlists.removeIf(p -> p.getName().equals(selected));
+                    if (currentPlaylist != null && currentPlaylist.getName().equals(selected)) {
+                        currentPlaylist = null;
+                    }
+                    JOptionPane.showMessageDialog(null, "Playlist deleted.");
+                }
+            }
+        });
+
+        viewPlaylist.addActionListener(e -> {
+            if (currentPlaylist == null || currentPlaylist.getSongPaths().isEmpty()) {
+                JOptionPane.showMessageDialog(null, "No songs in playlist.");
+                return;
+            }
+            StringBuilder builder = new StringBuilder("Songs in playlist:\n");
+            for (String path : currentPlaylist.getSongPaths()) {
+                builder.append(new File(path).getName()).append("\n");
+            }
+            JOptionPane.showMessageDialog(null, builder.toString());
+        });
+
+        playAll.addActionListener(e -> {
+            if (currentPlaylist == null || currentPlaylist.getSongPaths().isEmpty()) {
+                JOptionPane.showMessageDialog(null, "No playlist selected or empty.");
+                return;
+            }
+
+            songQueue.clear();
+            for (String path : currentPlaylist.getSongPaths()) {
+                songQueue.add(new Song(path));
+            }
+
+            playNextSong();
+        });
+
+        savePlaylist.addActionListener(e -> {
+            if (currentPlaylist == null) {
+                JOptionPane.showMessageDialog(null, "No playlist selected.");
+                return;
+            }
+
+            try {
+                File file = new File("playlists/" + currentPlaylist.getName() + ".txt");
+                file.getParentFile().mkdirs();
+                java.io.FileWriter fw = new java.io.FileWriter(file);
+                for (String path : currentPlaylist.getSongPaths()) {
+                    fw.write(path + "\n");
+                }
+                fw.close();
+                JOptionPane.showMessageDialog(null, "Playlist saved.");
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        });
+
+        loadPlaylistFromFile.addActionListener(e -> {
+            JFileChooser chooser = new JFileChooser("playlists");
+            int result = chooser.showOpenDialog(null);
+            if (result == JFileChooser.APPROVE_OPTION) {
+                try {
+                    File file = chooser.getSelectedFile();
+                    Scanner sc = new Scanner(file);
+                    Playlist loaded = new Playlist(file.getName().replace(".txt", ""));
+                    while (sc.hasNextLine()) {
+                        String path = sc.nextLine();
+                        loaded.getSongPaths().add(path);
+                    }
+                    sc.close();
+                    playlists.add(loaded);
+                    currentPlaylist = loaded;
+                    JOptionPane.showMessageDialog(null, "Playlist loaded from file.");
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+
         add(toolBar);
+    }
+
+    private void playNextSong() {
+        if (!songQueue.isEmpty()) {
+            Song nextSong = songQueue.poll();
+            songHistory.push(nextSong); // Save for back button
+            musicPlayer.loadSong(nextSong);
+            updateSongTitleAndArtist(nextSong);
+            enablePauseButtonDisablePlayButton();
+        } else {
+            JOptionPane.showMessageDialog(null, "End of playlist.");
+        }
     }
 
     private void addPlaybackBtns(){
@@ -153,6 +343,17 @@ public class MusicPlayerGUI extends JFrame {
 
         //previous button
         JButton prevButton = new JButton(loadImage("src/assets/drive-download-20250416T121646Z-001/previous.png"));
+        prevButton.addActionListener(e -> {
+            if (songHistory.size() >= 2) {
+                songHistory.pop(); // current
+                Song previous = songHistory.pop(); // last one
+                musicPlayer.loadSong(previous);
+                updateSongTitleAndArtist(previous);
+                enablePauseButtonDisablePlayButton();
+            } else {
+                JOptionPane.showMessageDialog(null, "No previous song.");
+            }
+        });
         prevButton.setBorderPainted(false);
         prevButton.setBackground(null);
         playbackBtns.add(prevButton);
@@ -192,6 +393,7 @@ public class MusicPlayerGUI extends JFrame {
 
         //next button
         JButton nextButton = new JButton(loadImage("src/assets/drive-download-20250416T121646Z-001/next.png"));
+        nextButton.addActionListener(e -> playNextSong());
         nextButton.setBorderPainted(false);
         nextButton.setBackground(null);
         playbackBtns.add(nextButton);
@@ -199,10 +401,24 @@ public class MusicPlayerGUI extends JFrame {
         add(playbackBtns);
     }
 
-
     private void updateSongTitleAndArtist(Song song){
         songTitle.setText(song.getSongTitle());
         songArtist.setText(song.getSongArtist());
+    }
+
+    private void updatePlaylistSlider(Song song){
+        // update max count for slider
+        playbackSlider.setMaximum(song.getMp3File().getFrameCount());
+
+        // create the song length label
+        Hashtable<Integer, JLabel> labelTable = new Hashtable<>();
+
+        // beginning will be 00:00
+        JLabel labelBeginning = new JLabel(("00:00"));
+        labelBeginning.setFont(new Font("Dialog", Font.BOLD, 18 ));
+        labelBeginning.setForeground(TEXT_COLOR);
+
+        // end will vary depending on the song
     }
 
     private void enablePauseButtonDisablePlayButton(){
