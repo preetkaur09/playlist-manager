@@ -42,7 +42,6 @@ public class MusicPlayer extends PlaybackListener {
             // Update isPaused flag
             isPaused = true;
 
-
             stopSong();
         }
     }

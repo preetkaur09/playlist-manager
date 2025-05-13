@@ -22,7 +22,6 @@ public class Song {
             mp3File = new Mp3File(filePath);
             frameRatePerMilliseconds = (double) mp3File.getFrameCount() / mp3File.getLengthInMilliseconds();
 
-
             // use the jaudiotagger library to create an audiofile obj to read mp3 file's information
             AudioFile audioFile = AudioFileIO.read(new File(filePath));
 
@@ -40,7 +39,9 @@ public class Song {
             e.printStackTrace();
         }
     }
+
     //getters
+
     public String getSongTitle() {
         return songTitle;
     }
@@ -49,13 +50,16 @@ public class Song {
         return songArtist;
     }
 
-
-
     public String getFilePath() {
         return filePath;
     }
 
-    public Mp3File getMp3File(){return mp3File;}
-    public double getFrameRatePerMilliseconds(){return frameRatePerMilliseconds;}
+    public Mp3File getMp3File(){
+        return mp3File;
+    }
+
+    public double getFrameRatePerMilliseconds(){
+        return frameRatePerMilliseconds;
+    }
 
 }

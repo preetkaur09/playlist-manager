@@ -1,13 +1,13 @@
-import view.MusicPlayerGUI;
+import models.UserManager;
+import view.UserAuthGUI;
 
 import javax.swing.*;
 
 public class App {
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() ->{
-                new MusicPlayerGUI().setVisible(true);
-
+        UserManager userManager = new UserManager(); // Create UserManager instance
+        SwingUtilities.invokeLater(() -> {
+            new UserAuthGUI(userManager).setVisible(true); // Show user authentication GUI
         });
-
     }
 }
