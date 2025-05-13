@@ -168,18 +168,42 @@ public class MusicPlayerGUI extends JFrame {
         JMenuItem playAll = new JMenuItem("Play All");
         playlistMenu.add(playAll);
 
-        //JMenuItem savePlaylist = new JMenuItem("Save Playlist");
-        //playlistMenu.add(savePlaylist);
-
-        //JMenuItem loadPlaylistFromFile = new JMenuItem("Load from File");
-        //playlistMenu.add(loadPlaylistFromFile);
 
         JMenuItem songToPlaylist = new JMenuItem("Add Song to Playlist");
         playlistMenu.add(songToPlaylist);
-
+        
         // Add the search playlist menu item
         JMenuItem searchPlaylist = new JMenuItem("Search Playlist by Name");
         playlistMenu.add(searchPlaylist);
+
+        JMenuItem removeSongFromPlaylist = new JMenuItem("Remove Song from Playlist");
+        playlistMenu.add(removeSongFromPlaylist);
+
+        removeSongFromPlaylist.addActionListener(e -> {
+            if (currentPlaylist == null || currentPlaylist.getSongPaths().isEmpty()) {
+                JOptionPane.showMessageDialog(null, "No songs in the playlist to remove.");
+                return;
+            }
+
+            String[] songNames = currentPlaylist.getSongPaths().stream()
+                    .map(path -> new File(path).getName())
+                    .toArray(String[]::new);
+
+            String selectedSong = (String) JOptionPane.showInputDialog(null, "Select a song to remove:",
+                    "Remove Song", JOptionPane.QUESTION_MESSAGE, null, songNames, songNames[0]);
+
+            if (selectedSong != null) {
+                String songPathToRemove = currentPlaylist.getSongPaths().stream()
+                        .filter(path -> new File(path).getName().equals(selectedSong))
+                        .findFirst().orElse(null);
+
+                if (songPathToRemove != null) {
+                    currentPlaylist.removeSong(new Song(songPathToRemove));
+                    JOptionPane.showMessageDialog(null, "Song removed from playlist: " + selectedSong);
+                }
+            }
+        });
+
         searchPlaylist.addActionListener(e -> {
             String searchName = JOptionPane.showInputDialog("Enter playlist name to search:");
             if (searchName != null && !searchName.trim().isEmpty()) {
@@ -333,49 +357,6 @@ public class MusicPlayerGUI extends JFrame {
 
             playNextSong();
         });
-
-//        savePlaylist.addActionListener(e -> {
-//            if (currentPlaylist == null) {
-//                JOptionPane.showMessageDialog(null, "No playlist selected.");
-//                return;
-//            }
-//
-//            try {
-//                File file = new File("playlists/" + currentPlaylist.getName() + ".txt");
-//                file.getParentFile().mkdirs();
-//                java.io.FileWriter fw = new java.io.FileWriter(file);
-//                for (String path : currentPlaylist.getSongPaths()) {
-//                    fw.write(path + "\n");
-//                }
-//                fw.close();
-//                JOptionPane.showMessageDialog(null, "Playlist saved.");
-//            } catch (Exception ex) {
-//                ex.printStackTrace();
-//            }
-//        });
-
-//        loadPlaylistFromFile.addActionListener(e -> {
-//            JFileChooser chooser = new JFileChooser("playlists");
-//            int result = chooser.showOpenDialog(null);
-//            if (result == JFileChooser.APPROVE_OPTION) {
-//                try {
-//                    File file = chooser.getSelectedFile();
-//                    Scanner sc = new Scanner(file);
-//                    Playlist loaded = new Playlist(file.getName().replace(".txt", ""));
-//                    while (sc.hasNextLine()) {
-//                        String path = sc.nextLine();
-//                        loaded.getSongPaths().add(path);
-//                    }
-//                    sc.close();
-//                    playlists.add(loaded);
-//                    currentPlaylist = loaded;
-//                    JOptionPane.showMessageDialog(null, "Playlist loaded from file.");
-//                } catch (Exception ex) {
-//                    ex.printStackTrace();
-//                }
-//            }
-//        });
-
 
         add(toolBar);
     }

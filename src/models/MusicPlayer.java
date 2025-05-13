@@ -37,15 +37,16 @@ public class MusicPlayer extends PlaybackListener {
         }
     }
 
-    public void pauseSong(){
-        if(advancedPlayer != null){
-            //update isPaused flag
+    public void pauseSong() {
+        if (advancedPlayer != null) {
+            // Update isPaused flag
             isPaused = true;
 
-            //then we want to stop the player
+
             stopSong();
         }
     }
+
 
     public void stopSong(){
         if(advancedPlayer != null){
@@ -57,7 +58,7 @@ public class MusicPlayer extends PlaybackListener {
         }
     }
 
-    public void playCurrentSong(){
+    public void playCurrentSong() {
         if (currentSong == null) return;
         try {
             // Ensure any existing player is stopped
@@ -77,18 +78,16 @@ public class MusicPlayer extends PlaybackListener {
         }
     }
 
-    //create a thread that will handle playing the music
     private void startMusicThread() {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    if(isPaused){
-                        //resume music from the last frame
+                    if (isPaused) {
+                        // Resume music from the last frame
                         advancedPlayer.play(currentFrame, Integer.MAX_VALUE);
-
-                    }else{
-                        //play music from the beginning
+                    } else {
+                        // Play music from the beginning
                         advancedPlayer.play();
                     }
                 } catch (Exception e) {
@@ -96,7 +95,8 @@ public class MusicPlayer extends PlaybackListener {
                 }
             }
         }).start();
-        }
+    }
+
 
     @Override
     public void playbackStarted(PlaybackEvent evt) {
@@ -110,10 +110,13 @@ public class MusicPlayer extends PlaybackListener {
         if (isPaused) {
             currentFrame += (int) ((double) evt.getFrame() * currentSong.getFrameRatePerMilliseconds());
             System.out.println("Stopped @" + currentFrame);
+        } else {
+            // Reset currentFrame if not paused
+            currentFrame = 0;
         }
         // Reset flags
         isPaused = false;
-        currentFrame = 0;
     }
+
 }
 

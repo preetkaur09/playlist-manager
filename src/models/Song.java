@@ -19,14 +19,15 @@ public class Song {
     public Song(String filePath){
         this.filePath = filePath;
         try{
-             mp3File = new Mp3File(filePath);
-             frameRatePerMilliseconds = (double) mp3File.getFrameCount() / mp3File.getLengthInMilliseconds();
+            mp3File = new Mp3File(filePath);
+            frameRatePerMilliseconds = (double) mp3File.getFrameCount() / mp3File.getLengthInMilliseconds();
 
-            //use the jaudiotagger library to create audiofile obj to read mp3 file's information
+
+            // use the jaudiotagger library to create an audiofile obj to read mp3 file's information
             AudioFile audioFile = AudioFileIO.read(new File(filePath));
 
-            //read through the meta data of the audio file
-            Tag tag = audioFile.getTag();
+            // read through the meta data of the audio file
+            Tag tag =  audioFile.getTag();
             if(tag != null){
                 songTitle = tag.getFirst(FieldKey.TITLE);
                 songArtist = tag.getFirst(FieldKey.ARTIST);
@@ -35,11 +36,10 @@ public class Song {
                 songTitle = "N/A";
                 songArtist = "N/A";
             }
-        }catch (Exception e){
+        }catch(Exception e){
             e.printStackTrace();
         }
     }
-
     //getters
     public String getSongTitle() {
         return songTitle;
@@ -56,15 +56,6 @@ public class Song {
     }
 
     public Mp3File getMp3File(){return mp3File;}
-    public double getFrameRatePerMilliseconds() {return frameRatePerMilliseconds;}
+    public double getFrameRatePerMilliseconds(){return frameRatePerMilliseconds;}
 
-    public String getSongLength() {
-        if (mp3File != null) {
-            long milliseconds = mp3File.getLengthInMilliseconds();
-            int seconds = (int) (milliseconds / 1000) % 60;
-            int minutes = (int) ((milliseconds / 1000) / 60);
-            return String.format("%02d:%02d", minutes, seconds);
-        }
-        return "N/A";
-    }
 }
