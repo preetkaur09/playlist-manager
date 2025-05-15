@@ -1,4 +1,6 @@
+//This class represents a user in the application.
 package models;
+
 
 public class User {
     private String username;

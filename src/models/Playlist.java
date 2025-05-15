@@ -1,3 +1,4 @@
+//This class manages a playlist of songs.
 package models;
 
 import java.util.ArrayList;
@@ -26,7 +27,6 @@ public class Playlist {
     public List<String> getSongPaths() {
         return songPaths;
     }
-
     public String getName() {
         return name;
     }

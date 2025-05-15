@@ -1,4 +1,4 @@
-import models.UserManager;
+import database.UserManager;
 import view.UserAuthGUI;
 
 import javax.swing.*;

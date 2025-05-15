@@ -1,3 +1,4 @@
+//This class creates the main GUI for the music player.
 package view;
 
 import models.MusicPlayer;
@@ -365,7 +366,6 @@ public class MusicPlayerGUI extends JFrame {
         if (!songQueue.isEmpty()) {
             // Stop the current song
             musicPlayer.stopSong();
-
             Song nextSong = songQueue.poll(); // Get the next song from the queue
             songHistory.push(nextSong); // Add the song to the history stack
             musicPlayer.loadSong(nextSong); // Load the next song

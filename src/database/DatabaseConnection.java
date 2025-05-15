@@ -1,3 +1,4 @@
+//This class manages the connection to the MySQL database.
 package database;
 
 import java.sql.Connection;

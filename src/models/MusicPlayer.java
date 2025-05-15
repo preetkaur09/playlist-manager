@@ -1,3 +1,4 @@
+//This class handles the playback of songs.
 package models;
 
 import javazoom.jl.player.advanced.AdvancedPlayer;
@@ -65,6 +66,7 @@ public class MusicPlayer extends PlaybackListener {
                 advancedPlayer.stop();
                 advancedPlayer.close();
             }
+
             // Create new player for the current song
             FileInputStream fileInputStream = new FileInputStream(currentSong.getFilePath());
             BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);

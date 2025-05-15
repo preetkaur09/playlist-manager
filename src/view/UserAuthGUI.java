@@ -1,6 +1,7 @@
+//This class creates the user authentication GUI.
 package view;
 
-import models.UserManager;
+import database.UserManager;
 
 import javax.swing.*;
 import java.awt.*;

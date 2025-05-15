@@ -1,3 +1,4 @@
+// This class describes a song and its metadata.
 package models;
 
 import com.mpatric.mp3agic.Mp3File;

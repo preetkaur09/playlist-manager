@@ -1,6 +1,5 @@
-package models;
-
-import database.DatabaseConnection;
+//This class manages user registration and authentication.
+package database;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
